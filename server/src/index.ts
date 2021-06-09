@@ -51,7 +51,7 @@ const main = async () => {
 		context: ({ req, res }): MyContext => ({ em: orm.em, req, res })
 	})
 
-	apolloServer.applyMiddleware({ app })
+	apolloServer.applyMiddleware({ app, cors: false })
 
 	app.listen(4000, () => {
 		console.log('server started on http://localhost:4000')
