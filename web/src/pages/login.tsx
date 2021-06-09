@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
 import { Wrapper } from '../components/Wrapper'
-import { useRegisterMutation } from '../generated/graphql'
+import { useLoginMutation } from '../generated/graphql'
 import { toErrorMap } from '../utils/toErrorMap'
 import { useRouter } from 'next/router'
 
-interface registerProps {}
+interface loginProps {}
 
-const Register: React.FC<registerProps> = ({}) => {
+const Login: React.FC<loginProps> = ({}) => {
 	const [username, setUsername] = useState('')
 	const [password, setPassword] = useState('')
 	const [errors, setErros] = useState<Record<string, string>>({})
 
-	const [_, register] = useRegisterMutation()
+	const [_, login] = useLoginMutation()
 	const router = useRouter()
 
 	return (
@@ -20,15 +20,14 @@ const Register: React.FC<registerProps> = ({}) => {
 				className="flex flex-col"
 				onSubmit={async e => {
 					e.preventDefault()
-					const response = await register({
-						username: username,
-						password: password
+					const response = await login({
+						options: { username, password }
 					})
 
-					if (response.data?.register.errors) {
-						setErros(toErrorMap(response.data.register.errors))
+					if (response.data?.login.errors) {
+						setErros(toErrorMap(response.data.login.errors))
 						console.log(response)
-					} else if (response.data?.register.user) {
+					} else if (response.data?.login.user) {
 						router.push('/')
 					}
 				}}>
@@ -50,7 +49,6 @@ const Register: React.FC<registerProps> = ({}) => {
 						</p>
 					)}
 				</div>
-
 				<div className="mt-3">
 					<label className="font-semibold text-xl" htmlFor="password">
 						Password
@@ -70,15 +68,14 @@ const Register: React.FC<registerProps> = ({}) => {
 						</p>
 					)}
 				</div>
-
 				<button
 					className="font-semibold mt-3 rounded-lg p-4 bg-green-500 text-white w-1/3"
 					type="submit">
-					register
+					login
 				</button>
 			</form>
 		</Wrapper>
 	)
 }
 
-export default Register
+export default Login

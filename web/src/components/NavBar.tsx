@@ -1,0 +1,50 @@
+import React from 'react'
+import Link from 'next/link'
+import { useMeQuery } from '../generated/graphql'
+
+interface NavBarProps {}
+
+export const NavBar: React.FC<NavBarProps> = ({}) => {
+	const [{ data, fetching }] = useMeQuery()
+	let body
+
+	// data is loading
+	if (fetching) {
+		body = null
+		// user not logged in
+	} else if (!data?.me) {
+		body = (
+			<>
+				<Link href="/login">
+					<a className="mr-4 border ring-4 ring-green-300 rounded-lg p-2">
+						log in
+					</a>
+				</Link>
+				<Link href="/register">
+					<a className="mr-2 border ring-4 ring-green-300 rounded-lg p-2">
+						register
+					</a>
+				</Link>
+			</>
+		)
+
+		// user is logged in
+	} else {
+		body = (
+			<>
+				<div className="border ring-4 ring-yellow-500 rounded-lg p-2 mr-3">
+					{data.me.username}
+				</div>
+				<button className="border ring-4 ring-red-400 rounded-lg p-2">
+					logout
+				</button>
+			</>
+		)
+	}
+
+	return (
+		<div className="bg-green-100 p-3 flex">
+			<div className="ml-auto flex">{body}</div>
+		</div>
+	)
+}
