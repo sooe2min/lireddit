@@ -11,7 +11,7 @@ import { UserResolver } from './resolvers/user'
 // import connectRedis from 'connect-redis'
 import cors from 'cors'
 import session from 'express-session'
-import { __prod__ } from './constants'
+import { COOKIE_NAME, __prod__ } from './constants'
 import { MyContext } from './types'
 
 const main = async () => {
@@ -33,7 +33,7 @@ const main = async () => {
 		session({
 			saveUninitialized: false,
 			resave: false,
-			name: 'qid',
+			name: COOKIE_NAME,
 			secret: 'lireddit',
 			cookie: {
 				sameSite: 'lax', // CSRF

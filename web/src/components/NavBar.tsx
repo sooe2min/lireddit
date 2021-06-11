@@ -1,12 +1,13 @@
 import React from 'react'
 import Link from 'next/link'
-import { useMeQuery } from '../generated/graphql'
+import { useLogoutMutation, useMeQuery } from '../generated/graphql'
 
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
 	const [{ data, fetching }] = useMeQuery()
 	// console.log(data, fetching) // 캐싱 관련 콘솔
+	const [_, logout] = useLogoutMutation()
 
 	let body
 
@@ -37,7 +38,9 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 				<div className="border ring-4 ring-yellow-500 rounded-lg p-2 mr-3">
 					{data.me.username}
 				</div>
-				<button className="border ring-4 ring-red-400 rounded-lg p-2">
+				<button
+					className="border ring-4 ring-red-400 rounded-lg p-2"
+					onClick={() => logout()}>
 					logout
 				</button>
 			</>
