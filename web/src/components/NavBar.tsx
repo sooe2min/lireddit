@@ -5,15 +5,17 @@ import { useLogoutMutation, useMeQuery } from '../generated/graphql'
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
-	const [{ data, fetching }] = useMeQuery()
+	const [{ data, fetching }] = useMeQuery({
+		// Warning: Did not expect server HTML to contain a <a> in <div>.
+		// pause: isServer()
+	})
 	// console.log(data, fetching) // 캐싱 관련 콘솔
 	const [_, logout] = useLogoutMutation()
 
-	let body
+	let body = null
 
 	// data is loading
 	if (fetching) {
-		body = null
 		// user not logged in
 	} else if (!data?.me) {
 		body = (

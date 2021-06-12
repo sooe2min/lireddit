@@ -3,10 +3,13 @@ import { Wrapper } from '../components/Wrapper'
 import { useRegisterMutation } from '../generated/graphql'
 import { toErrorMap } from '../utils/toErrorMap'
 import { useRouter } from 'next/router'
+import { withUrqlClient } from 'next-urql'
+import { createUrqlClient } from '../utils/createUqrlCleint'
 
 interface registerProps {}
 
 const Register: React.FC<registerProps> = ({}) => {
+	const [email, setEmail] = useState('')
 	const [username, setUsername] = useState('')
 	const [password, setPassword] = useState('')
 	const [errors, setErros] = useState<Record<string, string>>({})
@@ -21,17 +24,37 @@ const Register: React.FC<registerProps> = ({}) => {
 				onSubmit={async e => {
 					e.preventDefault()
 					const response = await register({
-						username: username,
-						password: password
+						options: {
+							email: email,
+							username: username,
+							password: password
+						}
 					})
-
 					if (response.data?.register.errors) {
 						setErros(toErrorMap(response.data.register.errors))
-						console.log(response)
 					} else if (response.data?.register.user) {
 						router.push('/')
 					}
 				}}>
+				<div className="mt-3">
+					<label className="font-semibold text-xl" htmlFor="email">
+						Email
+					</label>
+					<input
+						className="w-full border mt-2 border-green-500 p-3"
+						id="email"
+						type="text"
+						placeholder="email"
+						value={email || ''}
+						onChange={e => setEmail(e.target.value)}
+					/>
+					{errors.email && (
+						<p className="text-red-600 mt-1 font-light">
+							{errors.email}
+						</p>
+					)}
+				</div>
+
 				<div className="mt-3">
 					<label className="font-semibold text-xl" htmlFor="username">
 						Username
@@ -81,4 +104,4 @@ const Register: React.FC<registerProps> = ({}) => {
 	)
 }
 
-export default Register
+export default withUrqlClient(createUrqlClient)(Register)

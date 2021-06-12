@@ -3,11 +3,13 @@ import { Wrapper } from '../components/Wrapper'
 import { useLoginMutation } from '../generated/graphql'
 import { toErrorMap } from '../utils/toErrorMap'
 import { useRouter } from 'next/router'
+import { createUrqlClient } from '../utils/createUqrlCleint'
+import { withUrqlClient } from 'next-urql'
 
 interface loginProps {}
 
 const Login: React.FC<loginProps> = ({}) => {
-	const [username, setUsername] = useState('')
+	const [usernameOrEmail, setUsernameOrEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [errors, setErros] = useState<Record<string, string>>({})
 
@@ -20,8 +22,10 @@ const Login: React.FC<loginProps> = ({}) => {
 				className="flex flex-col"
 				onSubmit={async e => {
 					e.preventDefault()
+
 					const response = await login({
-						options: { username, password }
+						password: password,
+						usernameOrEmail: usernameOrEmail
 					})
 
 					if (response.data?.login.errors) {
@@ -31,20 +35,22 @@ const Login: React.FC<loginProps> = ({}) => {
 					}
 				}}>
 				<div className="mt-3">
-					<label className="font-semibold text-xl" htmlFor="username">
-						Username
+					<label
+						className="font-semibold text-xl"
+						htmlFor="usernameOrEmail">
+						Username or Email
 					</label>
 					<input
 						className="w-full border mt-2 border-green-500 p-3"
-						id="username"
+						id="usernameOrEmail"
 						type="text"
-						placeholder="username"
-						value={username || ''}
-						onChange={e => setUsername(e.target.value)}
+						placeholder="username or email"
+						value={usernameOrEmail || ''}
+						onChange={e => setUsernameOrEmail(e.target.value)}
 					/>
-					{errors.username && (
+					{errors.usernameOrEmail && (
 						<p className="text-red-600 mt-1 font-light">
-							{errors.username}
+							{errors.usernameOrEmail}
 						</p>
 					)}
 				</div>
@@ -77,4 +83,4 @@ const Login: React.FC<loginProps> = ({}) => {
 	)
 }
 
-export default Login
+export default withUrqlClient(createUrqlClient)(Login)
