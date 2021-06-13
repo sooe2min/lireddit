@@ -161,6 +161,8 @@ export class UserResolver {
 		@Arg('email') email: string,
 		@Ctx() { em, redis }: MyContext
 	) {
+		console.log(email)
+
 		const user = await em.findOne(User, { email })
 		if (!user) {
 			// the email is not in the db
@@ -181,5 +183,58 @@ export class UserResolver {
 		)
 
 		return true
+	}
+
+	@Mutation(() => UserResponse)
+	async changePassword(
+		@Arg('token') token: string,
+		@Arg('newPassword') newPassword: string,
+		@Ctx() { em, req, redis }: MyContext
+	) {
+		if (newPassword.length <= 3) {
+			return {
+				errors: [
+					{
+						field: 'newPassword',
+						message: 'length must be greater than 3'
+					}
+				]
+			}
+		}
+
+		const key = FORGET_PASSWORD_PREFIX + token
+		const userId = await redis.get(key)
+		console.log(userId)
+
+		if (!userId) {
+			return {
+				errors: [
+					{
+						field: 'token',
+						message: 'token expired'
+					}
+				]
+			}
+		}
+
+		const user = await em.findOne(User, { id: parseInt(userId) })
+		if (!user) {
+			return {
+				errors: [
+					{
+						field: 'token',
+						message: 'user no longer exists'
+					}
+				]
+			}
+		}
+
+		user.password = await argon2.hash(newPassword)
+		await em.persistAndFlush(user)
+
+		// log in user after change password
+		req.session.userId = user.id
+
+		return { user }
 	}
 }

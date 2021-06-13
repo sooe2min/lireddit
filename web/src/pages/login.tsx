@@ -3,6 +3,7 @@ import { Wrapper } from '../components/Wrapper'
 import { useLoginMutation } from '../generated/graphql'
 import { toErrorMap } from '../utils/toErrorMap'
 import { useRouter } from 'next/router'
+import NextLink from 'next/link'
 import { createUrqlClient } from '../utils/createUqrlCleint'
 import { withUrqlClient } from 'next-urql'
 
@@ -54,6 +55,7 @@ const Login: React.FC<loginProps> = ({}) => {
 						</p>
 					)}
 				</div>
+
 				<div className="mt-3">
 					<label className="font-semibold text-xl" htmlFor="password">
 						Password
@@ -73,6 +75,15 @@ const Login: React.FC<loginProps> = ({}) => {
 						</p>
 					)}
 				</div>
+
+				<div>
+					<p className="text-black mt-1 font-light flex">
+						<NextLink href="/forgot-password">
+							<a className="ml-auto mt-2">forgot password?</a>
+						</NextLink>
+					</p>
+				</div>
+
 				<button
 					className="font-semibold mt-3 rounded-lg p-4 bg-green-500 text-white w-1/3"
 					type="submit">
