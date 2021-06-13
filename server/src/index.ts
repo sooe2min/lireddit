@@ -7,8 +7,8 @@ import { buildSchema } from 'type-graphql'
 import { HelloResolver } from './resolvers/hello'
 import { PostResolver } from './resolvers/post'
 import { UserResolver } from './resolvers/user'
-// import redis from 'redis'
-// import connectRedis from 'connect-redis'
+import redis from 'redis'
+import connectRedis from 'connect-redis'
 import cors from 'cors'
 import session from 'express-session'
 import { COOKIE_NAME, __prod__ } from './constants'
@@ -20,8 +20,8 @@ const main = async () => {
 
 	const app = express()
 
-	// const RedisStore = connectRedis(session)
-	// const redisClient = redis.createClient()
+	const RedisStore = connectRedis(session)
+	const redisClient = redis.createClient()
 	app.use(
 		cors({
 			credentials: true,
@@ -35,6 +35,10 @@ const main = async () => {
 			resave: false,
 			name: COOKIE_NAME,
 			secret: 'lireddit',
+			store: new RedisStore({
+				client: redisClient,
+				disableTouch: true
+			}),
 			cookie: {
 				sameSite: 'lax', // CSRF
 				secure: __prod__, // only HTTPS

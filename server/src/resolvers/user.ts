@@ -1,7 +1,6 @@
 import { User } from '../entities/User'
 import { MyContext } from 'src/types'
 import {
-	InputType,
 	Mutation,
 	Arg,
 	Ctx,
@@ -13,14 +12,8 @@ import {
 import argon2 from 'argon2'
 import { EntityManager } from '@mikro-orm/postgresql'
 import { COOKIE_NAME } from '../constants'
-
-@InputType()
-class UsernamePasswordInput {
-	@Field()
-	username: string
-	@Field()
-	password: string
-}
+import { validateRegister } from '../utils/validateRegister'
+import { UsernamePasswordInput } from './UsernamePasswordInput'
 
 @ObjectType()
 class FieldError {
@@ -46,6 +39,7 @@ export class UserResolver {
 		if (!req.session.userId) {
 			return null
 		}
+
 		const user = await em.findOne(User, { id: req.session.userId })
 		return user
 	}
@@ -55,25 +49,9 @@ export class UserResolver {
 		@Arg('options') options: UsernamePasswordInput,
 		@Ctx() { em, req }: MyContext
 	): Promise<UserResponse> {
-		if (options.username.length <= 2) {
-			return {
-				errors: [
-					{
-						field: 'username',
-						message: 'length must be greater than 2'
-					}
-				]
-			}
-		}
-		if (options.password.length <= 3) {
-			return {
-				errors: [
-					{
-						field: 'password',
-						message: 'length must be greater than 3'
-					}
-				]
-			}
+		const errors = validateRegister(options)
+		if (errors) {
+			return { errors }
 		}
 
 		const hashedPassword = await argon2.hash(options.password)
@@ -84,6 +62,7 @@ export class UserResolver {
 				.createQueryBuilder(User)
 				.getKnexQuery()
 				.insert({
+					email: options.email,
 					username: options.username,
 					password: hashedPassword,
 					created_at: new Date(),
@@ -116,23 +95,29 @@ export class UserResolver {
 
 	@Mutation(() => UserResponse)
 	async login(
-		@Arg('options') options: UsernamePasswordInput,
+		@Arg('usernameOrEmail') usernameOrEmail: string,
+		@Arg('password') password: string,
 		@Ctx() { em, req }: MyContext
 	): Promise<UserResponse> {
-		const user = await em.findOne(User, {
-			username: options.username
-		})
+		const user = await em.findOne(
+			User,
+			usernameOrEmail.includes('@')
+				? { email: usernameOrEmail }
+				: { username: usernameOrEmail }
+		)
+
 		if (!user) {
 			return {
 				errors: [
 					{
-						field: 'username',
-						message: "that username doesn't exist"
+						field: 'usernameOrEmail',
+						message: "that username or email doesn't exist"
 					}
 				]
 			}
 		}
-		const valid = await argon2.verify(user.password, options.password)
+
+		const valid = await argon2.verify(user.password, password)
 		if (!valid) {
 			return {
 				errors: [
@@ -143,6 +128,7 @@ export class UserResolver {
 				]
 			}
 		}
+
 		req.session.userId = user.id
 		return { user }
 	}
