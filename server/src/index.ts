@@ -1,6 +1,5 @@
 import 'reflect-metadata'
-import { MikroORM } from '@mikro-orm/core'
-import microConfig from './mikro-orm.config'
+import { createConnection } from 'typeorm'
 import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 import { buildSchema } from 'type-graphql'
@@ -15,9 +14,6 @@ import { COOKIE_NAME, __prod__ } from './constants'
 import { MyContext } from './types'
 
 const main = async () => {
-	const orm = await MikroORM.init(microConfig)
-	await orm.getMigrator().up()
-
 	const app = express()
 
 	const RedisStore = connectRedis(session)
@@ -53,7 +49,6 @@ const main = async () => {
 			validate: false
 		}),
 		context: ({ req, res }): MyContext => ({
-			em: orm.em,
 			req,
 			res,
 			redis
@@ -62,8 +57,14 @@ const main = async () => {
 
 	apolloServer.applyMiddleware({ app, cors: false })
 
-	app.listen(4000, () => {
+	app.listen(4000, async () => {
 		console.log('server started on http://localhost:4000')
+		try {
+			await createConnection()
+			console.log('Database connected!')
+		} catch (error: unknown) {
+			console.log(error)
+		}
 	})
 }
 
