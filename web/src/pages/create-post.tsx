@@ -1,4 +1,5 @@
 import { withUrqlClient } from 'next-urql'
+import { useRouter } from 'next/dist/client/router'
 import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { useCreatePostMutation } from '../generated/graphql'
@@ -12,18 +13,23 @@ const CreatePost = ({}) => {
 	const [_, createPost] = useCreatePostMutation()
 	useIsAuth()
 
+	const router = useRouter()
+
 	return (
 		<Layout variant="small">
 			<form
 				className="flex flex-col"
 				onSubmit={async e => {
 					e.preventDefault()
-					await createPost({
+					const { error } = await createPost({
 						input: {
 							title,
 							text
 						}
 					})
+					if (!error) {
+						router.replace('/')
+					}
 				}}>
 				<div className="mt-3">
 					<label className="font-semibold text-xl" htmlFor="title">

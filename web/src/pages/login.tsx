@@ -16,6 +16,7 @@ const Login: React.FC<loginProps> = ({}) => {
 
 	const [_, login] = useLoginMutation()
 	const router = useRouter()
+	console.log(router)
 
 	return (
 		<Wrapper variant="small">
@@ -32,7 +33,9 @@ const Login: React.FC<loginProps> = ({}) => {
 					if (response.data?.login.errors) {
 						setErros(toErrorMap(response.data.login.errors))
 					} else if (response.data?.login.user) {
-						router.push('/')
+						if (typeof router.query.next === 'string') {
+							router.push(router.query.next)
+						} else router.push('/')
 					}
 				}}>
 				<div className="mt-3">
