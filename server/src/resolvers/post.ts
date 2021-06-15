@@ -7,10 +7,12 @@ import {
 	Field,
 	InputType,
 	Ctx,
-	Authorized
+	Authorized,
+	Int
 } from 'type-graphql'
 import { MyContext } from 'src/types'
 import { User } from '../entities/User'
+import { getConnection } from 'typeorm'
 
 @InputType()
 class PostInput {
@@ -23,8 +25,24 @@ class PostInput {
 @Resolver()
 export class PostResolver {
 	@Query(() => [Post])
-	async posts(): Promise<Post[]> {
-		return Post.find({})
+	async posts(
+		@Arg('limit', () => Int) limit: number,
+		@Arg('cursor', () => String, { nullable: true }) cursor: string | null
+	): Promise<Post[]> {
+		const realLimit = Math.min(limit, 50)
+		const cb = getConnection()
+			.getRepository(Post)
+			.createQueryBuilder('p')
+			.orderBy('"createdAt"', 'DESC')
+			.take(realLimit)
+
+		if (cursor) {
+			cb.where('"createAt" < :cursor', {
+				cursor: new Date(parseInt(cursor))
+			})
+		}
+
+		return cb.getMany()
 	}
 
 	@Query(() => Post, { nullable: true })
@@ -45,18 +63,12 @@ export class PostResolver {
 	}
 
 	@Mutation(() => Post, { nullable: true })
-	async updatePost(
-		@Arg('id') id: number,
-		@Arg('title', () => String, { nullable: true }) title: string
-	): Promise<Post | null> {
+	async updatePost(@Arg('id') id: number, @Arg('input') input: PostInput) {
 		const post = await Post.findOne(id)
 		if (!post) {
 			return null
 		}
-		if (typeof title !== 'undefined') {
-			Post.update(id, { title })
-		}
-		return post
+		return Post.update(id, { ...input })
 	}
 
 	@Mutation(() => Boolean)

@@ -16,7 +16,6 @@ const Login: React.FC<loginProps> = ({}) => {
 
 	const [_, login] = useLoginMutation()
 	const router = useRouter()
-	console.log(router)
 
 	return (
 		<Wrapper variant="small">

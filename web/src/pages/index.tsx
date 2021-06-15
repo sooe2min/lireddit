@@ -6,7 +6,11 @@ import React from 'react'
 import { Layout } from '../components/Layout'
 
 const Index = () => {
-	const [{ data }] = usePostsQuery()
+	const [{ data }] = usePostsQuery({
+		variables: {
+			limit: 6
+		}
+	})
 
 	return (
 		<>
