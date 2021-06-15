@@ -62,7 +62,8 @@ const main = async () => {
 	app.listen(4000, async () => {
 		console.log('server started on http://localhost:4000')
 		try {
-			await createConnection()
+			const conn = await createConnection()
+			await conn.runMigrations()
 			console.log('Database connected!')
 		} catch (error: unknown) {
 			console.log(error)
