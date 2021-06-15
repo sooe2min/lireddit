@@ -12,6 +12,7 @@ import cors from 'cors'
 import session from 'express-session'
 import { COOKIE_NAME, __prod__ } from './constants'
 import { MyContext } from './types'
+import { authChecker } from './utils/authChecker'
 
 const main = async () => {
 	const app = express()
@@ -46,7 +47,8 @@ const main = async () => {
 	const apolloServer = new ApolloServer({
 		schema: await buildSchema({
 			resolvers: [HelloResolver, PostResolver, UserResolver],
-			validate: false
+			validate: false,
+			authChecker: authChecker
 		}),
 		context: ({ req, res }): MyContext => ({
 			req,
