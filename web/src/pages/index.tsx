@@ -2,39 +2,59 @@ import { withUrqlClient } from 'next-urql'
 import { createUrqlClient } from '../utils/createUqrlCleint'
 import { usePostsQuery } from '../generated/graphql'
 import NextLink from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
 
 const Index = () => {
-	const [{ data }] = usePostsQuery({
-		variables: {
-			limit: 6
-		}
+	const [variables, setvariables] = useState({
+		limit: 6,
+		cursor: null as null | string
 	})
+	const [{ data, fetching }] = usePostsQuery({
+		variables
+	})
+
+	if (!data && !fetching)
+		return <div>you got query failed for some reason</div>
 
 	return (
 		<>
-			<Layout variant="small">
-				<NextLink href="/create-post">
-					<a>create post</a>
-				</NextLink>
-
-				<br />
-
-				<div>hello world</div>
-
-				<br />
-				<br />
-
-				{!data ? (
+			<Layout variant="regular">
+				<div className="flex items-center mb-7">
+					<h1 className="font-bold text-5xl mt-4">Lireddit</h1>
+					<NextLink href="/create-post">
+						<a className="ml-auto font-semibold border-yellow-100 border-b-4 p-1 hover:bg-yellow-100">
+							create post
+						</a>
+					</NextLink>
+				</div>
+				{!data && fetching ? (
 					<div>...loading</div>
 				) : (
-					data.posts.map(p => (
-						<div key={p.id}>
-							{p.title}: {p.text}
+					data!.posts.map(p => (
+						<div
+							className="flex flex-col border-2 p-4 mb-6 shadow-md hover:border-yellow-100 hover:shadow-none"
+							key={p.id}>
+							<div className="font-bold text-2xl">{p.title}</div>
+							<div className="pt-3">{p.textSnippet}</div>
 						</div>
 					))
 				)}
+				{data ? (
+					<div className="flex">
+						<button
+							className="m-auto ring-4 rounded-lg ring-yellow-100 p-4"
+							onClick={() => {
+								setvariables({
+									limit: variables.limit,
+									// DESC, 마지막 글의 createdAt
+									cursor: data.posts[data.posts.length - 1].createdAt
+								})
+							}}>
+							load more
+						</button>
+					</div>
+				) : null}
 			</Layout>
 		</>
 	)

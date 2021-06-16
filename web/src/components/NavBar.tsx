@@ -21,12 +21,12 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 		body = (
 			<>
 				<Link href="/login">
-					<a className="mr-4 border ring-4 ring-green-300 rounded-lg p-2">
+					<a className="mr-4 border ring-4 ring-yellow-100 rounded-lg p-2">
 						log in
 					</a>
 				</Link>
 				<Link href="/register">
-					<a className="mr-2 border ring-4 ring-green-300 rounded-lg p-2">
+					<a className="mr-2 border ring-4 ring-yellow-100 rounded-lg p-2">
 						register
 					</a>
 				</Link>
