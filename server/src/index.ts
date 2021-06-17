@@ -13,6 +13,7 @@ import session from 'express-session'
 import { COOKIE_NAME, __prod__ } from './constants'
 import { MyContext } from './types'
 import { authChecker } from './utils/authChecker'
+// import { Post } from './entities/Post'
 
 const main = async () => {
 	const app = express()
@@ -64,6 +65,7 @@ const main = async () => {
 		try {
 			const conn = await createConnection()
 			await conn.runMigrations()
+			// Post.delete({})
 			console.log('Database connected!')
 		} catch (error: unknown) {
 			console.log(error)

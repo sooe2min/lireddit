@@ -6,8 +6,8 @@ import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
 
 const Index = () => {
-	const [variables, setvariables] = useState({
-		limit: 6,
+	const [variables, setVariables] = useState({
+		limit: 333,
 		cursor: null as null | string
 	})
 	const [{ data, fetching }] = usePostsQuery({
@@ -31,7 +31,7 @@ const Index = () => {
 				{!data && fetching ? (
 					<div>...loading</div>
 				) : (
-					data!.posts.map(p => (
+					data!.posts.posts.map(p => (
 						<div
 							className="flex flex-col border-2 p-4 mb-6 shadow-md hover:border-yellow-100 hover:shadow-none"
 							key={p.id}>
@@ -40,15 +40,16 @@ const Index = () => {
 						</div>
 					))
 				)}
-				{data ? (
+				{data && data.posts.hasMore ? (
 					<div className="flex">
 						<button
 							className="m-auto ring-4 rounded-lg ring-yellow-100 p-4"
 							onClick={() => {
-								setvariables({
+								setVariables({
 									limit: variables.limit,
 									// DESC, 마지막 글의 createdAt
-									cursor: data.posts[data.posts.length - 1].createdAt
+									cursor:
+										data.posts.posts[data.posts.posts.length - 1].createdAt
 								})
 							}}>
 							load more
