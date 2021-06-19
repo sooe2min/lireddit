@@ -6,9 +6,11 @@ import {
 	Entity,
 	JoinColumn,
 	ManyToOne,
+	OneToMany,
 	PrimaryGeneratedColumn,
 	UpdateDateColumn
 } from 'typeorm'
+import { Updoot } from './Updoot'
 import { User } from './User'
 
 @ObjectType()
@@ -30,9 +32,13 @@ export class Post extends BaseEntity {
 	@Column({ type: 'int', default: 0 })
 	points!: number
 
+	@Field()
 	@ManyToOne(() => User, user => user.posts)
 	@JoinColumn({ name: 'creatorId', referencedColumnName: 'id' })
 	creator: User
+
+	@OneToMany(() => Updoot, updoot => updoot.post)
+	updoot: Updoot
 
 	@Field(() => String)
 	@CreateDateColumn()

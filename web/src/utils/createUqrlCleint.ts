@@ -15,12 +15,13 @@ import {
 import { betterUpdateQuery } from './betterUpdateQuery'
 import Router from 'next/router'
 
-export const simplePagination = (): Resolver => {
+export const cursorPagination = (): Resolver => {
 	return (_parent, fieldArgs, cache, info) => {
 		const { parentKey: entityKey, fieldName } = info
-		const allFields = cache.inspectFields(entityKey)
+
+		const allFields = cache.inspectFields(entityKey) // 'Query'
 		const fieldInfos = allFields.filter(
-			info => info.fieldName === fieldName
+			info => info.fieldName === fieldName // 'posts'
 		)
 
 		const size = fieldInfos.length
@@ -29,7 +30,6 @@ export const simplePagination = (): Resolver => {
 		}
 
 		const filedKey = `${fieldName}(${stringifyVariables(fieldArgs)})`
-
 		const isItInTheCache = cache.resolve(
 			cache.resolveFieldByKey(entityKey, filedKey) as string,
 			'posts'
@@ -69,11 +69,21 @@ export const createUrqlClient = (ssrExchange: any) => ({
 			},
 			resolvers: {
 				Query: {
-					posts: simplePagination()
+					posts: cursorPagination()
 				}
 			},
 			updates: {
 				Mutation: {
+					createPost: (_result, _, cache) => {
+						const allFields = cache.inspectFields('Query')
+						const fieldInfos = allFields.filter(
+							info => info.fieldName === 'posts'
+						)
+						fieldInfos.forEach(fi => {
+							cache.invalidate('Query', 'posts', fi.arguments)
+						})
+					},
+
 					register: (_result, _, cache) => {
 						betterUpdateQuery<RegisterMutation, MeQuery>(
 							cache,

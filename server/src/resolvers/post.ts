@@ -16,6 +16,7 @@ import {
 import { MyContext } from 'src/types'
 import { User } from '../entities/User'
 import { getConnection } from 'typeorm'
+import { Updoot } from '../entities/Updoot'
 
 @ObjectType()
 class PaginatedPosts {
@@ -45,18 +46,19 @@ export class PostResolver {
 		@Arg('limit', () => Int) limit: number,
 		@Arg('cursor', () => String, { nullable: true }) cursor: string | null
 	): Promise<PaginatedPosts> {
-		const realLimit = Math.min(limit, 500)
+		const realLimit = Math.min(limit, 50)
 		const realLimitPlusOne = realLimit + 1
 
 		const cb = getConnection()
 			.getRepository(Post)
 			.createQueryBuilder('p')
-			.orderBy('"createdAt"', 'DESC')
+			.leftJoinAndSelect('p.creator', 'u', 'p.creatorId = u.id')
+			.orderBy('p.createdAt', 'DESC')
 			.take(realLimitPlusOne)
 
 		if (cursor) {
 			// 내림차순, cursor 값보다 작은 createdAt
-			cb.where('"createdAt" < :cursor', {
+			cb.where('p.createdAt < :cursor', {
 				cursor: new Date(parseInt(cursor))
 			})
 		}
@@ -97,6 +99,34 @@ export class PostResolver {
 	@Mutation(() => Boolean)
 	async deletePost(@Arg('id') id: number): Promise<boolean> {
 		await Post.delete(id)
+		return true
+	}
+
+	@Mutation(() => Boolean)
+	async vote(
+		@Arg('postId', () => Int) postId: number,
+		@Arg('value', () => Int) value: number,
+		@Ctx() { req }: MyContext
+	) {
+		const isUpdoot = value !== -1
+		console.log(isUpdoot)
+
+		const realValue = isUpdoot ? 1 : -1
+		console.log(realValue)
+
+		const { userId } = req.session
+
+		const test = await Updoot.insert({
+			value: realValue,
+			userId: userId,
+			postId: postId
+		})
+		console.log(test)
+
+		const post = await Post.findOne(postId)
+		post!.points++
+		post?.save()
+
 		return true
 	}
 }

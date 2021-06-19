@@ -7,7 +7,7 @@ import { Layout } from '../components/Layout'
 
 const Index = () => {
 	const [variables, setVariables] = useState({
-		limit: 333,
+		limit: 5,
 		cursor: null as null | string
 	})
 	const [{ data, fetching }] = usePostsQuery({
