@@ -4,6 +4,7 @@ import { usePostsQuery } from '../generated/graphql'
 import NextLink from 'next/link'
 import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
+import { UpdootSection } from '../components/UpdootSection'
 
 const Index = () => {
 	const [variables, setVariables] = useState({
@@ -33,10 +34,16 @@ const Index = () => {
 				) : (
 					data!.posts.posts.map(p => (
 						<div
-							className="flex flex-col border-2 p-4 mb-6 shadow-md hover:border-yellow-100 hover:shadow-none"
+							className="flex border-2 p-4 mb-6 shadow-md hover:border-yellow-100 hover:shadow-none"
 							key={p.id}>
-							<div className="font-bold text-2xl">{p.title}</div>
-							<div className="pt-3">{p.textSnippet}</div>
+							<UpdootSection post={p} />
+							<div>
+								<div className="font-medium text-2xl">{p.title}</div>
+								<p className="text-gray-400">
+									Posted by {p.creator.username}
+								</p>
+								<div className="pt-3">{p.textSnippet}</div>
+							</div>
 						</div>
 					))
 				)}
