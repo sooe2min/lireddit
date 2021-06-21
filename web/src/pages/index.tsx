@@ -14,6 +14,7 @@ const Index = () => {
 	const [{ data, fetching }] = usePostsQuery({
 		variables
 	})
+	console.log(data)
 
 	if (!data && !fetching)
 		return <div>you got query failed for some reason</div>

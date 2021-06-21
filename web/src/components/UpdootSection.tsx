@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { PostSnippetFragment, useVoteMutation } from '../generated/graphql'
 
 interface UpdootSectionProps {
@@ -11,8 +11,11 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
 	return (
 		<div className="flex flex-col mr-3 items-center min-w-max">
 			<div
-				className="p-2 bg-yellow-50"
+				className={
+					post.voteStatus === 1 ? 'bg-green-400 p-2' : 'bg-yellow-50 p-2'
+				}
 				onClick={() => {
+					if (post.voteStatus === 1) return
 					vote({
 						postId: post.id,
 						value: 1
@@ -22,8 +25,11 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
 			</div>
 			{post.points}
 			<div
-				className="p-2 bg-yellow-50"
+				className={
+					post.voteStatus === -1 ? 'bg-red-400 p-2' : 'bg-yellow-50 p-2'
+				}
 				onClick={() => {
+					if (post.voteStatus === -1) return
 					vote({
 						postId: post.id,
 						value: -1
