@@ -1,6 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useLogoutMutation, useMeQuery } from '../generated/graphql'
+// import { isServer } from '../utils/isServer'
 
 interface NavBarProps {}
 

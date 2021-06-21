@@ -71,7 +71,7 @@ export class PostResolver {
 		const realLimit = Math.min(limit, 50)
 		const realLimitPlusOne = realLimit + 1
 
-		const cb = getConnection()
+		const qb = getConnection()
 			.getRepository(Post)
 			.createQueryBuilder('p')
 			.orderBy('p.createdAt', 'DESC')
@@ -79,11 +79,11 @@ export class PostResolver {
 
 		if (cursor) {
 			// 내림차순, cursor 값보다 작은 createdAt
-			cb.where('p.createdAt < :cursor', {
+			qb.where('p.createdAt < :cursor', {
 				cursor: new Date(parseInt(cursor))
 			})
 		}
-		const posts = await cb.getMany()
+		const posts = await qb.getMany()
 
 		return {
 			posts: posts.slice(0, realLimit),
