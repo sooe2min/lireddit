@@ -5,7 +5,8 @@ import {
 	Entity,
 	// JoinColumn,
 	ManyToOne,
-	PrimaryGeneratedColumn
+	PrimaryColumn
+	// PrimaryGeneratedColumn
 } from 'typeorm'
 import { Post } from './Post'
 import { User } from './User'
@@ -13,16 +14,16 @@ import { User } from './User'
 @ObjectType()
 @Entity('updoots')
 export class Updoot extends BaseEntity {
-	@PrimaryGeneratedColumn('increment')
-	id!: number
+	// @PrimaryGeneratedColumn('increment')
+	// id!: number
 
 	@Column({ type: 'int' })
 	value: number
 
-	@Column()
+	@PrimaryColumn()
 	userId: number
 
-	@Column()
+	@PrimaryColumn()
 	postId: number
 
 	@ManyToOne(() => User, user => user.updoot)

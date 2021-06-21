@@ -13,6 +13,9 @@ import session from 'express-session'
 import { COOKIE_NAME, __prod__ } from './constants'
 import { MyContext } from './types'
 import { authChecker } from './utils/authChecker'
+import { createUserLoader } from './utils/createUserLoader'
+import { createUpdootLoader } from './utils/createUpdootLoader'
+// import { Updoot } from './entities/Updoot'
 // import { Post } from './entities/Post'
 
 const main = async () => {
@@ -54,7 +57,9 @@ const main = async () => {
 		context: ({ req, res }): MyContext => ({
 			req,
 			res,
-			redis
+			redis,
+			userLoader: createUserLoader(),
+			updootLoader: createUpdootLoader()
 		})
 	})
 
@@ -65,6 +70,7 @@ const main = async () => {
 		try {
 			const conn = await createConnection()
 			await conn.runMigrations()
+			// Updoot.delete({})
 			// Post.delete({})
 			console.log('Database connected!')
 		} catch (error: unknown) {

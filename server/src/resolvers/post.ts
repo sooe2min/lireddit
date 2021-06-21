@@ -41,6 +41,28 @@ export class PostResolver {
 		return root.text.slice(0, 500)
 	}
 
+	@FieldResolver(() => User)
+	creator(@Root() post: Post, @Ctx() { userLoader }: MyContext) {
+		return userLoader.load(post.creatorId)
+	}
+
+	@FieldResolver(() => Int, { nullable: true })
+	async voteStatus(
+		@Root() post: Post,
+		@Ctx() { req, updootLoader }: MyContext
+	) {
+		if (!req.session.userId) {
+			return null
+		}
+
+		const updoot = await updootLoader.load({
+			userId: req.session.userId,
+			postId: post.id
+		})
+
+		return updoot ? updoot.value : null
+	}
+
 	@Query(() => PaginatedPosts)
 	async posts(
 		@Arg('limit', () => Int) limit: number,
@@ -52,7 +74,6 @@ export class PostResolver {
 		const cb = getConnection()
 			.getRepository(Post)
 			.createQueryBuilder('p')
-			.leftJoinAndSelect('p.creator', 'u', 'p.creatorId = u.id')
 			.orderBy('p.createdAt', 'DESC')
 			.take(realLimitPlusOne)
 
@@ -109,24 +130,29 @@ export class PostResolver {
 		@Ctx() { req }: MyContext
 	) {
 		const isUpdoot = value !== -1
-		console.log(isUpdoot)
-
 		const realValue = isUpdoot ? 1 : -1
-		console.log(realValue)
-
 		const { userId } = req.session
 
-		const test = await Updoot.insert({
-			value: realValue,
-			userId: userId,
-			postId: postId
-		})
-		console.log(test)
+		const updoot = await Updoot.findOne({ where: { userId, postId } })
 
-		const post = await Post.findOne(postId)
-		post!.points++
-		post?.save()
+		if (updoot && updoot.value !== realValue) {
+			updoot.value = realValue
+			updoot.save()
 
+			const post = await Post.findOne(postId)
+			post!.points = post!.points + realValue * 2
+			post?.save()
+		} else if (!updoot) {
+			await Updoot.insert({
+				value: realValue,
+				userId: userId,
+				postId: postId
+			})
+
+			const post = await Post.findOne(postId)
+			post!.points = post!.points + realValue
+			post?.save()
+		}
 		return true
 	}
 }

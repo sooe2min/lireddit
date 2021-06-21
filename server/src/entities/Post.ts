@@ -1,4 +1,4 @@
-import { Field, ObjectType } from 'type-graphql'
+import { Field, Int, ObjectType } from 'type-graphql'
 import {
 	BaseEntity,
 	Column,
@@ -32,6 +32,9 @@ export class Post extends BaseEntity {
 	@Column({ type: 'int', default: 0 })
 	points!: number
 
+	@Column()
+	creatorId: number
+
 	@Field()
 	@ManyToOne(() => User, user => user.posts)
 	@JoinColumn({ name: 'creatorId', referencedColumnName: 'id' })
@@ -39,6 +42,9 @@ export class Post extends BaseEntity {
 
 	@OneToMany(() => Updoot, updoot => updoot.post)
 	updoot: Updoot
+
+	@Field(() => Int, { nullable: true })
+	voteStatus: number | null
 
 	@Field(() => String)
 	@CreateDateColumn()
