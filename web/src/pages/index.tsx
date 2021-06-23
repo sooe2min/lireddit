@@ -1,10 +1,15 @@
 import { withUrqlClient } from 'next-urql'
 import { createUrqlClient } from '../utils/createUqrlCleint'
-import { usePostsQuery } from '../generated/graphql'
+import {
+	useDeletePostMutation,
+	useMeQuery,
+	usePostsQuery
+} from '../generated/graphql'
 import NextLink from 'next/link'
 import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { UpdootSection } from '../components/UpdootSection'
+import { EditDeletePostButton } from '../components/EditDeletePostButton'
 
 const Index = () => {
 	const [variables, setVariables] = useState({
@@ -21,31 +26,30 @@ const Index = () => {
 	return (
 		<>
 			<Layout variant="regular">
-				<div className="flex items-center mb-7">
-					<h1 className="font-bold text-5xl mt-4">Lireddit</h1>
-					<NextLink href="/create-post">
-						<a className="ml-auto font-semibold border-yellow-100 border-b-4 p-1 hover:bg-yellow-100">
-							create post
-						</a>
-					</NextLink>
-				</div>
 				{!data && fetching ? (
 					<div>...loading</div>
 				) : (
-					data!.posts.posts.map(p => (
-						<div
-							className="flex border-2 p-4 mb-6 shadow-md hover:border-yellow-100 hover:shadow-none"
-							key={p.id}>
-							<UpdootSection post={p} />
-							<div>
-								<div className="font-medium text-2xl">{p.title}</div>
-								<p className="text-gray-400">
-									Posted by {p.creator.username}
-								</p>
-								<div className="pt-3">{p.textSnippet}</div>
+					data!.posts.posts.map(p =>
+						!p ? null : (
+							<div
+								className="flex border-2 p-4 mb-6 shadow-md hover:border-yellow-100 hover:shadow-none"
+								key={p.id}>
+								<UpdootSection post={p} />
+								<div className="flex flex-col flex-1">
+									<NextLink href="/post/[id]" as={`/post/${p.id}`}>
+										<a>
+											<h1 className="font-medium text-2xl">{p.title}</h1>
+										</a>
+									</NextLink>
+									<p className="text-gray-400">
+										Posted by {p.creator.username}
+									</p>
+									<div className="pt-3">{p.textSnippet}</div>
+								</div>
+								<EditDeletePostButton id={p.id} creatorId={p.creator.id} />
 							</div>
-						</div>
-					))
+						)
+					)
 				)}
 				{data && data.posts.hasMore ? (
 					<div className="flex">

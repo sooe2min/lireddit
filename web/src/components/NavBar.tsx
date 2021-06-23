@@ -1,5 +1,5 @@
 import React from 'react'
-import Link from 'next/link'
+import NextLink from 'next/link'
 import { useLogoutMutation, useMeQuery } from '../generated/graphql'
 // import { isServer } from '../utils/isServer'
 
@@ -21,16 +21,16 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 	} else if (!data?.me) {
 		body = (
 			<>
-				<Link href="/login">
-					<a className="mr-4 border ring-4 ring-yellow-100 rounded-lg p-2">
+				<NextLink href="/login">
+					<a className="font-semibold border-yellow-100 border-b-4 p-1 hover:bg-yellow-100 mr-3">
 						log in
 					</a>
-				</Link>
-				<Link href="/register">
-					<a className="mr-2 border ring-4 ring-yellow-100 rounded-lg p-2">
+				</NextLink>
+				<NextLink href="/register">
+					<a className="font-semibold border-yellow-400  border-b-4 p-1 hover:bg-yellow-400 mr-3">
 						register
 					</a>
-				</Link>
+				</NextLink>
 			</>
 		)
 
@@ -38,11 +38,16 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 	} else {
 		body = (
 			<>
-				<div className="border ring-4 ring-yellow-500 rounded-lg p-2 mr-3">
+				<NextLink href="/create-post">
+					<button className="font-semibold border-yellow-100 border-b-4 p-1 hover:bg-yellow-100 mr-3">
+						create post
+					</button>
+				</NextLink>
+				<div className="font-semibold border-yellow-400  border-b-4 p-1 hover:bg-yellow-400 mr-3">
 					{data.me.username}
 				</div>
 				<button
-					className="border ring-4 ring-red-400 rounded-lg p-2"
+					className="font-semibold border-red-400  border-b-4 p-1 hover:bg-red-400"
 					onClick={() => logout()}>
 					logout
 				</button>
@@ -51,8 +56,15 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 	}
 
 	return (
-		<div className="bg-green-100 p-3 sticky top-0 w-full flex z-10">
-			<div className="ml-auto flex">{body}</div>
+		<div className="bg-green-100 p-3 sticky top-0 z-10">
+			<div className="flex m-auto max-w-3xl items-center">
+				<NextLink href="/">
+					<a className="font-bold text-5xl flex-1">
+						<h1>Lireddit</h1>
+					</a>
+				</NextLink>
+				<div className="flex">{body}</div>
+			</div>
 		</div>
 	)
 }

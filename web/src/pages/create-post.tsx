@@ -9,11 +9,10 @@ import { useIsAuth } from '../utils/useIsAuth'
 const CreatePost = ({}) => {
 	const [title, setTitle] = useState('')
 	const [text, setText] = useState('')
+	const router = useRouter()
 
 	const [_, createPost] = useCreatePostMutation()
 	useIsAuth()
-
-	const router = useRouter()
 
 	return (
 		<Layout variant="small">

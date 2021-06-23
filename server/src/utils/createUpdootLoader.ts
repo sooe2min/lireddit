@@ -11,7 +11,6 @@ export const createUpdootLoader = () =>
 			updoots.forEach(updoot => {
 				updootIdsToUpdoot[`${updoot.userId} | ${updoot.postId}`] = updoot
 			})
-			console.log(updoots)
 
 			return keys.map(
 				key => updootIdsToUpdoot[`${key.userId} | ${key.postId}`]

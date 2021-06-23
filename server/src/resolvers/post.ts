@@ -92,7 +92,7 @@ export class PostResolver {
 	}
 
 	@Query(() => Post, { nullable: true })
-	post(@Arg('id') id: number): Promise<Post | undefined> {
+	post(@Arg('id', () => Int) id: number): Promise<Post | undefined> {
 		return Post.findOne(id)
 	}
 
@@ -108,18 +108,36 @@ export class PostResolver {
 		}).save()
 	}
 
+	@Authorized()
 	@Mutation(() => Post, { nullable: true })
-	async updatePost(@Arg('id') id: number, @Arg('input') input: PostInput) {
+	async updatePost(
+		@Arg('id', () => Int) id: number,
+		@Arg('input') input: PostInput,
+		@Ctx() { req }: MyContext
+	) {
 		const post = await Post.findOne(id)
-		if (!post) {
-			return null
-		}
-		return Post.update(id, { ...input })
+		if (!post) return null
+		if (post.creatorId !== req.session.userId)
+			throw new Error('not authorized')
+		post.title = input.title
+		post.text = input.text
+		await post.save()
+		return post
 	}
 
+	@Authorized()
 	@Mutation(() => Boolean)
-	async deletePost(@Arg('id') id: number): Promise<boolean> {
-		await Post.delete(id)
+	async deletePost(
+		@Arg('id', () => Int) id: number,
+		@Ctx() { req }: MyContext
+	): Promise<boolean> {
+		const post = await Post.findOne(id)
+		if (!post) return false
+		if (post.creatorId !== req.session.userId)
+			throw new Error('not authorized')
+
+		await Updoot.delete({ postId: id })
+		await Post.delete({ id })
 		return true
 	}
 

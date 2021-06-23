@@ -12,7 +12,8 @@ import {
 	MeDocument,
 	LoginMutation,
 	LogoutMutation,
-	VoteMutationVariables
+	VoteMutationVariables,
+	DeletePostMutationVariables
 } from '../generated/graphql'
 import { betterUpdateQuery } from './betterUpdateQuery'
 import Router from 'next/router'
@@ -26,7 +27,6 @@ export const cursorPagination = (): Resolver => {
 		const fieldInfos = allFields.filter(
 			info => info.fieldName === fieldName // 'posts'
 		)
-
 		const size = fieldInfos.length
 		if (size === 0) {
 			return undefined
@@ -41,6 +41,7 @@ export const cursorPagination = (): Resolver => {
 
 		const results: string[] = []
 		let hasMore = true
+
 		fieldInfos.forEach(fi => {
 			const key = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string
 
@@ -125,6 +126,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
 							}
 						},
 
+						// With document caching we assume that a result may be invalidated by a mutation that executes on data that has been queried previously.
 						createPost: (_result, _, cache) => {
 							const allFields = cache.inspectFields('Query')
 							const fieldInfos = allFields.filter(
@@ -132,6 +134,13 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
 							)
 							fieldInfos.forEach(fi => {
 								cache.invalidate('Query', 'posts', fi.arguments)
+							})
+						},
+
+						deletePost: (_result, args, cache) => {
+							cache.invalidate({
+								__typename: 'Post',
+								id: (args as DeletePostMutationVariables).id
 							})
 						},
 
