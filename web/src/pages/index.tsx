@@ -1,10 +1,6 @@
 import { withUrqlClient } from 'next-urql'
 import { createUrqlClient } from '../utils/createUqrlCleint'
-import {
-	useDeletePostMutation,
-	useMeQuery,
-	usePostsQuery
-} from '../generated/graphql'
+import { usePostsQuery } from '../generated/graphql'
 import NextLink from 'next/link'
 import React, { useState } from 'react'
 import { Layout } from '../components/Layout'

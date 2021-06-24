@@ -5,7 +5,7 @@ import {
 	gql,
 	stringifyVariables
 } from 'urql'
-import { cacheExchange, Resolver } from '@urql/exchange-graphcache'
+import { Cache, cacheExchange, Resolver } from '@urql/exchange-graphcache'
 import {
 	RegisterMutation,
 	MeQuery,
@@ -60,6 +60,14 @@ export const cursorPagination = (): Resolver => {
 			hasMore
 		}
 	}
+}
+
+const invalidateAllPosts = (cache: Cache) => {
+	const allFields = cache.inspectFields('Query')
+	const fieldInfos = allFields.filter(info => info.fieldName === 'posts')
+	fieldInfos.forEach(fi => {
+		cache.invalidate('Query', 'posts', fi.arguments)
+	})
 }
 
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
@@ -128,13 +136,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
 
 						// With document caching we assume that a result may be invalidated by a mutation that executes on data that has been queried previously.
 						createPost: (_result, _, cache) => {
-							const allFields = cache.inspectFields('Query')
-							const fieldInfos = allFields.filter(
-								info => info.fieldName === 'posts'
-							)
-							fieldInfos.forEach(fi => {
-								cache.invalidate('Query', 'posts', fi.arguments)
-							})
+							invalidateAllPosts(cache)
 						},
 
 						deletePost: (_result, args, cache) => {
@@ -182,6 +184,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
 									}
 								}
 							)
+							invalidateAllPosts(cache)
 						},
 
 						logout: (_result, _, cache) => {
