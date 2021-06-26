@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import 'dotenv-safe/config'
 import { createConnection } from 'typeorm'
 import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
@@ -22,11 +23,11 @@ const main = async () => {
 	const app = express()
 
 	const RedisStore = connectRedis(session)
-	const redis = new Redis()
+	const redis = new Redis(process.env.REDIS_URL)
 	app.use(
 		cors({
 			credentials: true,
-			origin: 'http://localhost:3000'
+			origin: process.env.CORS_ORIGIN
 		})
 	)
 
@@ -35,7 +36,7 @@ const main = async () => {
 			saveUninitialized: false,
 			resave: false,
 			name: COOKIE_NAME,
-			secret: 'lireddit',
+			secret: process.env.SESSION_SECRET,
 			store: new RedisStore({
 				client: redis,
 				disableTouch: true
@@ -65,7 +66,7 @@ const main = async () => {
 
 	apolloServer.applyMiddleware({ app, cors: false })
 
-	app.listen(4000, async () => {
+	app.listen(+process.env.PORT, async () => {
 		console.log('server started on http://localhost:4000')
 		try {
 			const conn = await createConnection()
