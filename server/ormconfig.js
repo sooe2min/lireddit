@@ -6,7 +6,7 @@ module.exports = {
 	// password: 'e2e2',
 	// database: 'lireddit2',
 	url: process.env.DATABASE_URL,
-	synchronize: true,
+	// synchronize: true,
 	logging: true,
 	entities: ['dist/entities/**/*.js'],
 	migrations: ['dist/migrations/**/*.js'],
