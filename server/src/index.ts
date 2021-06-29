@@ -24,6 +24,7 @@ const main = async () => {
 
 	const RedisStore = connectRedis(session)
 	const redis = new Redis(process.env.REDIS_URL)
+	app.set('trust proxy', 1)
 	app.use(
 		cors({
 			credentials: true,
@@ -42,12 +43,22 @@ const main = async () => {
 				disableTouch: true
 			}),
 			cookie: {
+				httpOnly: true,
 				sameSite: 'lax', // CSRF
 				secure: __prod__, // only HTTPS
-				httpOnly: true
+				domain: __prod__ ? 'https://lireddit.ddns.net' : undefined
 			}
 		})
 	)
+	// qid=s:MOfAjyCGh1WRVfTEn4p6kV-f_optsJub.wvA+GwoKk6HsUqCrBH33EYZrkhKXK77yauquQ7T4uEE; Domain=.liredditweb.ddns.net; Path=/; HttpOnly; Secure; SameSite=Lax
+	// 도메인이 있을 때
+	// this set-cookie was blocked because its domain attribute was invalid with regards to the cureent host url.
+
+	// 도메인은 없고 lax
+	// this set-cookie was blocked because it had the "samesite=lax" attribute but came from a cross-site response which was not the response to a top-level navigation.
+
+	// 서버와 클라이언트의 도메인 주소가 다르다. 때문에 서브 도메인의 쿠키 접근을 허용하는 domain 옵션으로는 해결할 수 없다. DNS로부터 비롯된 문제이고 당장은 'samesite=none'으로 해결했다.
+	// qid=s:aE2MiYNkclNwDTjDehu0uxSC6tnomG45.G5XnDqI3ffUmfG1S9Tq4l2N+roycn8kSYeSGjdjliM4; Path=/; HttpOnly; Secure; SameSite=None
 
 	const apolloServer = new ApolloServer({
 		schema: await buildSchema({
