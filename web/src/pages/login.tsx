@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
 import { Wrapper } from '../components/Wrapper'
-import { useLoginMutation } from '../generated/graphql'
+import {
+	MeDocument,
+	MeQuery,
+	useLoginMutation
+} from '../generated/graphql'
 import { toErrorMap } from '../utils/toErrorMap'
 import { useRouter } from 'next/router'
 import NextLink from 'next/link'
-import { createUrqlClient } from '../utils/createUqrlCleint'
-import { withUrqlClient } from 'next-urql'
+import { withApollo } from '../utils/withApollo'
 
 interface loginProps {}
 
@@ -14,7 +17,7 @@ const Login: React.FC<loginProps> = ({}) => {
 	const [password, setPassword] = useState('')
 	const [errors, setErros] = useState<Record<string, string>>({})
 
-	const [_, login] = useLoginMutation()
+	const [login] = useLoginMutation()
 	const router = useRouter()
 
 	return (
@@ -25,8 +28,20 @@ const Login: React.FC<loginProps> = ({}) => {
 					e.preventDefault()
 
 					const response = await login({
-						password: password,
-						usernameOrEmail: usernameOrEmail
+						variables: {
+							password: password,
+							usernameOrEmail: usernameOrEmail
+						},
+						update(cache, { data }) {
+							cache.writeQuery<MeQuery>({
+								query: MeDocument,
+								data: {
+									__typename: 'Query',
+									me: data?.login.user
+								}
+							})
+							cache.evict({ fieldName: 'posts' })
+						}
 					})
 
 					if (response.data?.login.errors) {
@@ -96,4 +111,4 @@ const Login: React.FC<loginProps> = ({}) => {
 	)
 }
 
-export default withUrqlClient(createUrqlClient)(Login)
+export default withApollo({ ssr: false })(Login)

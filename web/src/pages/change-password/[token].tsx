@@ -1,10 +1,12 @@
 import { NextPage } from 'next'
-import { withUrqlClient } from 'next-urql'
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
 import { Wrapper } from '../../components/Wrapper'
-import { useChangePasswordMutation } from '../../generated/graphql'
-import { createUrqlClient } from '../../utils/createUqrlCleint'
+import {
+	MeDocument,
+	MeQuery,
+	useChangePasswordMutation
+} from '../../generated/graphql'
 import { toErrorMap } from '../../utils/toErrorMap'
 import NextLink from 'next/link'
 
@@ -12,7 +14,7 @@ const ChangePassword: NextPage = () => {
 	const [newPassword, setNewPassword] = useState('')
 	const [errors, setErros] = useState<Record<string, string>>({})
 
-	const [_, changePassword] = useChangePasswordMutation()
+	const [changePassword] = useChangePasswordMutation()
 	const router = useRouter()
 
 	return (
@@ -22,11 +24,22 @@ const ChangePassword: NextPage = () => {
 				onSubmit={async e => {
 					e.preventDefault()
 					const response = await changePassword({
-						token:
-							typeof router.query.token === 'string'
-								? router.query.token
-								: '',
-						newPassword
+						variables: {
+							token:
+								typeof router.query.token === 'string'
+									? router.query.token
+									: '',
+							newPassword
+						},
+						update(cache, { data }) {
+							cache.writeQuery<MeQuery>({
+								query: MeDocument,
+								data: {
+									__typename: 'Query',
+									me: data?.changePassword.user
+								}
+							})
+						}
 					})
 					if (response.data?.changePassword.errors) {
 						setErros(toErrorMap(response.data.changePassword.errors))
@@ -74,4 +87,4 @@ const ChangePassword: NextPage = () => {
 	)
 }
 
-export default withUrqlClient(createUrqlClient)(ChangePassword)
+export default ChangePassword

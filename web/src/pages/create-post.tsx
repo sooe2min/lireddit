@@ -1,17 +1,16 @@
-import { withUrqlClient } from 'next-urql'
 import { useRouter } from 'next/dist/client/router'
 import React, { useState } from 'react'
 import { Layout } from '../components/Layout'
 import { useCreatePostMutation } from '../generated/graphql'
-import { createUrqlClient } from '../utils/createUqrlCleint'
 import { useIsAuth } from '../utils/useIsAuth'
+import { withApollo } from '../utils/withApollo'
 
-const CreatePost = ({}) => {
+const CreatePost: React.FC<{}> = ({}) => {
 	const [title, setTitle] = useState('')
 	const [text, setText] = useState('')
 	const router = useRouter()
 
-	const [_, createPost] = useCreatePostMutation()
+	const [createPost] = useCreatePostMutation()
 	useIsAuth()
 
 	return (
@@ -20,13 +19,18 @@ const CreatePost = ({}) => {
 				className="flex flex-col"
 				onSubmit={async e => {
 					e.preventDefault()
-					const { error } = await createPost({
-						input: {
-							title,
-							text
+					const { errors } = await createPost({
+						variables: {
+							input: {
+								title,
+								text
+							}
+						},
+						update(cache) {
+							cache.evict({ fieldName: 'posts' })
 						}
 					})
-					if (!error) {
+					if (!errors) {
 						router.replace('/')
 					}
 				}}>
@@ -67,4 +71,4 @@ const CreatePost = ({}) => {
 	)
 }
 
-export default withUrqlClient(createUrqlClient)(CreatePost)
+export default withApollo({ ssr: false })(CreatePost)

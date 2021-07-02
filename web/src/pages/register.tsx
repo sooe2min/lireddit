@@ -1,10 +1,13 @@
 import React, { useState } from 'react'
 import { Wrapper } from '../components/Wrapper'
-import { useRegisterMutation } from '../generated/graphql'
+import {
+	MeDocument,
+	MeQuery,
+	useRegisterMutation
+} from '../generated/graphql'
 import { toErrorMap } from '../utils/toErrorMap'
 import { useRouter } from 'next/router'
-import { withUrqlClient } from 'next-urql'
-import { createUrqlClient } from '../utils/createUqrlCleint'
+import { withApollo } from '../utils/withApollo'
 
 interface registerProps {}
 
@@ -14,7 +17,7 @@ const Register: React.FC<registerProps> = ({}) => {
 	const [password, setPassword] = useState('')
 	const [errors, setErros] = useState<Record<string, string>>({})
 
-	const [_, register] = useRegisterMutation()
+	const [register] = useRegisterMutation()
 	const router = useRouter()
 
 	return (
@@ -24,10 +27,21 @@ const Register: React.FC<registerProps> = ({}) => {
 				onSubmit={async e => {
 					e.preventDefault()
 					const response = await register({
-						options: {
-							email: email,
-							username: username,
-							password: password
+						variables: {
+							options: {
+								email: email,
+								username: username,
+								password: password
+							}
+						},
+						update(cache, { data }) {
+							cache.writeQuery<MeQuery>({
+								query: MeDocument,
+								data: {
+									__typename: 'Query',
+									me: data?.register.user
+								}
+							})
 						}
 					})
 					if (response.data?.register.errors) {
@@ -49,9 +63,7 @@ const Register: React.FC<registerProps> = ({}) => {
 						onChange={e => setEmail(e.target.value)}
 					/>
 					{errors.email && (
-						<p className="text-red-600 mt-1 font-light">
-							{errors.email}
-						</p>
+						<p className="text-red-600 mt-1 font-light">{errors.email}</p>
 					)}
 				</div>
 
@@ -104,4 +116,4 @@ const Register: React.FC<registerProps> = ({}) => {
 	)
 }
 
-export default withUrqlClient(createUrqlClient)(Register)
+export default withApollo({ ssr: false })(Register)

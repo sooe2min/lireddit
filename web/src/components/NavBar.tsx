@@ -1,24 +1,22 @@
 import React from 'react'
 import NextLink from 'next/link'
 import { useLogoutMutation, useMeQuery } from '../generated/graphql'
-// import { isServer } from '../utils/isServer'
-import { useRouter } from 'next/router'
+import { isServer } from '../utils/isServer'
 
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
-	const router = useRouter()
-	const [{ data, fetching }] = useMeQuery({
+	const { data, loading } = useMeQuery({
 		// Warning: Did not expect server HTML to contain a <a> in <div>.
-		// pause: isServer()
+		skip: isServer()
 	})
 	// console.log(data, fetching) // 캐싱 관련 콘솔
-	const [_, logout] = useLogoutMutation()
+	const [logout, { client }] = useLogoutMutation()
 
 	let body = null
 
 	// data is loading
-	if (fetching) {
+	if (loading) {
 		// user not logged in
 	} else if (!data?.me) {
 		body = (
@@ -52,7 +50,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 					className="font-semibold border-red-400  border-b-4 p-1 hover:bg-red-400"
 					onClick={async () => {
 						await logout()
-						router.reload()
+						client.resetStore()
 					}}>
 					logout
 				</button>

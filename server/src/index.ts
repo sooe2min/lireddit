@@ -43,10 +43,11 @@ const main = async () => {
 				disableTouch: true
 			}),
 			cookie: {
+				maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
 				httpOnly: true,
 				sameSite: 'lax', // CSRF
-				secure: __prod__, // only HTTPS
-				domain: __prod__ ? 'https://lireddit.ddns.net' : undefined
+				secure: __prod__ // only HTTPS
+				// domain: __prod__ ? '.liredditweb.ddns.net' : undefined
 			}
 		})
 	)
@@ -81,7 +82,7 @@ const main = async () => {
 		console.log('server started on http://localhost:4000')
 		try {
 			const conn = await createConnection()
-			await conn.runMigrations()
+			// await conn.runMigrations()
 			// Updoot.delete({})
 			// Post.delete({})
 			console.log('Database connected!')

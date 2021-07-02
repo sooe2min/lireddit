@@ -1,14 +1,13 @@
-import { withUrqlClient } from 'next-urql'
 import React from 'react'
 import { EditDeletePostButton } from '../../components/EditDeletePostButton'
 import { Layout } from '../../components/Layout'
-import { createUrqlClient } from '../../utils/createUqrlCleint'
 import { useGetPostFromUrl } from '../../utils/useGetFromPostUrl'
+import { withApollo } from '../../utils/withApollo'
 
 const Post = ({}) => {
-	const [{ data, fetching, error }] = useGetPostFromUrl()
+	const { data, loading, error } = useGetPostFromUrl()
 
-	if (!data && fetching) {
+	if (!data && loading) {
 		return <Layout variant="regular">...loading</Layout>
 	}
 
@@ -38,4 +37,4 @@ const Post = ({}) => {
 	)
 }
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Post)
+export default withApollo({ ssr: true })(Post)

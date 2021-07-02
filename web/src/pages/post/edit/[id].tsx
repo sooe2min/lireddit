@@ -1,4 +1,3 @@
-import { withUrqlClient } from 'next-urql'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import { Layout } from '../../../components/Layout'
@@ -6,15 +5,15 @@ import {
 	usePostQuery,
 	useUpdatePostMutation
 } from '../../../generated/graphql'
-import { createUrqlClient } from '../../../utils/createUqrlCleint'
 import { useGetIntId } from '../../../utils/useGetIntId'
+import { withApollo } from '../../../utils/withApollo'
 
 // updatePost 이후엔 캐시가 자동으로 업데이트 된다.
 // 하지만 graphql 문서를 동일하게 작성해야 한다.
 const EditPost = ({}) => {
 	const intId = useGetIntId()
-	const [{ data, fetching, error }] = usePostQuery({
-		pause: intId === -1,
+	const { data, loading, error } = usePostQuery({
+		skip: intId === -1,
 		variables: {
 			id: intId
 		}
@@ -31,10 +30,10 @@ const EditPost = ({}) => {
 		}
 	}, [data])
 
-	const [_, updatePost] = useUpdatePostMutation()
+	const [updatePost] = useUpdatePostMutation()
 	const router = useRouter()
 
-	if (!data && fetching) {
+	if (!data && loading) {
 		return <Layout variant="regular">...loading</Layout>
 	}
 
@@ -49,10 +48,12 @@ const EditPost = ({}) => {
 				onSubmit={async e => {
 					e.preventDefault()
 					await updatePost({
-						id: intId,
-						input: {
-							title,
-							text
+						variables: {
+							id: intId,
+							input: {
+								title,
+								text
+							}
 						}
 					})
 					router.back()
@@ -94,4 +95,4 @@ const EditPost = ({}) => {
 	)
 }
 
-export default withUrqlClient(createUrqlClient)(EditPost)
+export default withApollo({ ssr: false })(EditPost)

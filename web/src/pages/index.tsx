@@ -1,28 +1,27 @@
-import { withUrqlClient } from 'next-urql'
-import { createUrqlClient } from '../utils/createUqrlCleint'
 import { usePostsQuery } from '../generated/graphql'
 import NextLink from 'next/link'
-import React, { useState } from 'react'
+import React from 'react'
 import { Layout } from '../components/Layout'
 import { UpdootSection } from '../components/UpdootSection'
 import { EditDeletePostButton } from '../components/EditDeletePostButton'
+import { withApollo } from '../utils/withApollo'
 
 const Index = () => {
-	const [variables, setVariables] = useState({
-		limit: 5,
-		cursor: null as null | string
-	})
-	const [{ data, fetching }] = usePostsQuery({
-		variables
+	const { data, loading, fetchMore, variables } = usePostsQuery({
+		variables: {
+			limit: 5,
+			cursor: null as null | string
+		},
+		notifyOnNetworkStatusChange: true
 	})
 
-	if (!data && !fetching)
+	if (!data && !loading)
 		return <div>you got query failed for some reason</div>
 
 	return (
 		<>
 			<Layout variant="regular">
-				{!data && fetching ? (
+				{!data && loading ? (
 					<div>...loading</div>
 				) : (
 					data!.posts.posts.map(p =>
@@ -52,11 +51,14 @@ const Index = () => {
 						<button
 							className="m-auto ring-4 rounded-lg ring-yellow-100 p-4"
 							onClick={() => {
-								setVariables({
-									limit: variables.limit,
-									// DESC, 마지막 글의 createdAt
-									cursor:
-										data.posts.posts[data.posts.posts.length - 1].createdAt
+								fetchMore({
+									variables: {
+										limit: variables?.limit,
+										// DESC, 마지막 글의 createdAt
+										cursor:
+											data.posts.posts[data.posts.posts.length - 1]
+												.createdAt
+									}
 								})
 							}}>
 							load more
@@ -68,9 +70,9 @@ const Index = () => {
 	)
 }
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index)
-// SSR 의문1.. post 요청없이 데이터를 어떻게 가지고 있는 거지?
-// 우선 codegen의 use..Query는 자동 요청이고,
+export default withApollo({ ssr: true })(Index)
+// SSR 의문1.. post 요청(network에서)없이 데이터를 어떻게 가지고 있는 거지?
+// 답: 우선 codegen의 use..Query는 자동 호출이고,
 // SSR은 서버로부터 모든 요청 데이터를 가져와서
 // 그 이후에 페이지를 로드하기 때문에, post 요청이 없는 거다.
 

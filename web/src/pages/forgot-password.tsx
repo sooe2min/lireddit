@@ -1,14 +1,13 @@
-import { withUrqlClient } from 'next-urql'
 import React, { useState } from 'react'
 import { Wrapper } from '../components/Wrapper'
 import { useForgotPasswordMutation } from '../generated/graphql'
-import { createUrqlClient } from '../utils/createUqrlCleint'
+import { withApollo } from '../utils/withApollo'
 
 const ForgotPassword: React.FC<{}> = ({}) => {
 	const [email, setEmail] = useState('')
 	const [complete, setComplete] = useState(false)
 
-	const [_, forgotPassword] = useForgotPasswordMutation()
+	const [forgotPassword] = useForgotPasswordMutation()
 
 	return (
 		<Wrapper variant="small">
@@ -21,7 +20,7 @@ const ForgotPassword: React.FC<{}> = ({}) => {
 					className="flex flex-col"
 					onSubmit={async e => {
 						e.preventDefault()
-						await forgotPassword({ email })
+						await forgotPassword({ variables: { email } })
 						setComplete(true)
 					}}>
 					<div className="mt-3">
@@ -49,4 +48,4 @@ const ForgotPassword: React.FC<{}> = ({}) => {
 	)
 }
 
-export default withUrqlClient(createUrqlClient)(ForgotPassword)
+export default withApollo({ ssr: false })(ForgotPassword)
