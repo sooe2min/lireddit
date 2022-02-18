@@ -1,3 +1,3 @@
-# lireddit
-레딧 클론 with Ben Awad
-[Fullstack React GraphQL TypeScript Tutorial](https://youtu.be/I6ypD7qv3Z8)
+## lireddit
+- 레딧 클론 with Ben Awad
+- [Fullstack React GraphQL TypeScript Tutorial](https://youtu.be/I6ypD7qv3Z8)
