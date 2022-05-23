@@ -1,21 +1,21 @@
-import 'reflect-metadata'
-import 'dotenv-safe/config'
-import { createConnection } from 'typeorm'
 import { ApolloServer } from 'apollo-server-express'
+import connectRedis from 'connect-redis'
+import cors from 'cors'
+import 'dotenv-safe/config'
 import express from 'express'
+import session from 'express-session'
+import Redis from 'ioredis'
+import 'reflect-metadata'
 import { buildSchema } from 'type-graphql'
+import { createConnection } from 'typeorm'
+import { COOKIE_NAME, __prod__ } from './constants'
 import { HelloResolver } from './resolvers/hello'
 import { PostResolver } from './resolvers/post'
 import { UserResolver } from './resolvers/user'
-import Redis from 'ioredis'
-import connectRedis from 'connect-redis'
-import cors from 'cors'
-import session from 'express-session'
-import { COOKIE_NAME, __prod__ } from './constants'
 import { MyContext } from './types'
 import { authChecker } from './utils/authChecker'
-import { createUserLoader } from './utils/createUserLoader'
 import { createUpdootLoader } from './utils/createUpdootLoader'
+import { createUserLoader } from './utils/createUserLoader'
 // import { Updoot } from './entities/Updoot'
 // import { Post } from './entities/Post'
 
@@ -37,7 +37,7 @@ const main = async () => {
 			saveUninitialized: false,
 			resave: false,
 			name: COOKIE_NAME,
-			secret: process.env.SESSION_SECRET,
+			secret: process.env.SESSION_SECRET as string,
 			store: new RedisStore({
 				client: redis,
 				disableTouch: true
@@ -78,18 +78,21 @@ const main = async () => {
 
 	apolloServer.applyMiddleware({ app, cors: false })
 
-	app.listen(+process.env.PORT, async () => {
-		console.log('server started on http://localhost:4000')
-		try {
-			const conn = await createConnection()
-			// await conn.runMigrations()
-			// Updoot.delete({})
-			// Post.delete({})
-			console.log('Database connected!')
-		} catch (error: unknown) {
-			console.log(error)
+	app.listen(
+		process.env.PORT ? (+process.env.PORT as number) : '',
+		async () => {
+			console.log('server started on http://localhost:4000')
+			try {
+				const conn = await createConnection()
+				await conn.runMigrations()
+				// Updoot.delete({})
+				// Post.delete({})
+				console.log('Database connected!')
+			} catch (error: unknown) {
+				console.log(error)
+			}
 		}
-	})
+	)
 }
 
 main().catch(err => {
