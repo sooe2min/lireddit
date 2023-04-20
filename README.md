@@ -6,6 +6,7 @@
 
 #### Stacks
 **[백엔드]** Express, TypeGraphQL, TypeORM, PostgreSQL
+
 **[프론트엔드]** TypeScript, React, Next.js, GraphQL, Apollo Client, Tailwind CSS
 
 #### Back-End
