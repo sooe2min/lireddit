@@ -4,6 +4,10 @@
 
 [Fullstack React GraphQL TypeScript Tutorial](https://youtu.be/I6ypD7qv3Z8)
 
+#### Stacks
+**[백엔드]** Express, TypeGraphQL, TypeORM, PostgreSQL
+**[프론트엔드]** TypeScript, React, Next.js, GraphQL, Apollo Client, Tailwind CSS
+
 #### Back-End
 
 - Express 기반 Apollo Server 셋업
